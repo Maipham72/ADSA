@@ -4,6 +4,16 @@
 #include <string>
 #include <vector>
 
+std::string removeZeros (std::string num) {
+  num.erase(0, num.find_first_not_of('0'));
+
+  if (num.empty()) {
+    return "0";
+  }
+
+  return num;
+}
+
 std::string schoolAddition(std::string num1, std::string num2, int base) {
   int num1_length = num1.length();
   int num2_length = num2.length();
@@ -40,7 +50,7 @@ std::string schoolAddition(std::string num1, std::string num2, int base) {
     sum = (char)(carry + '0') + sum;
   }
 
-  return sum;
+  return removeZeros(sum);
 }
 
 // bool compareNum(std::string num1, std::string num2) {
@@ -105,108 +115,9 @@ std::string schoolSubtraction(std::string num1, std::string num2, int base) {
     result = (char)(sub + '0') + result;
   }
 
-  result.erase(0, result.find_first_not_of('0'));
 
-  if (result.empty()) {
-    return "0";
-  }
-
-  return result;
+  return removeZeros(result);
 }
-
-// std::string karatsubaMultiplication(std::string num1, std::string num2, int
-// base) {
-//   int num1_length = num1.length();
-//   int num2_length = num2.length();
-//   int length = std::max(num1_length, num2_length);
-
-//   if (num1_length == 0 || num2_length == 0) {
-//     return "0";
-//   }
-
-//   if (num1_length == 1 && num2_length == 1) {
-//     int result = (num1[0] - '0') * (num2[0] - '0');
-//     return std::to_string(result);
-//   }
-
-//   // std::string zeros = "";
-
-//   // int diff = abs(num1_length - num2_length);
-
-//   // for (int i = 1; i <= diff; i++) {
-//   //   zeros += "0";
-//   // }
-
-//   // for (int i = 1; i <= diff; i++) {
-//   //   zeros += "0";
-//   // }
-
-//   // if (length % 2 != 0) {
-//   //   num1 = "0" + num1;
-//   //   num2 = "0" + num2;
-//   //   length++;
-//   // }
-
-//   while (num1_length < length) {
-//     num1.insert(0,"0");
-//   }
-
-//   while (num2_length < length) {
-//     num2.insert(0,"0");
-//   }
-
-//   int half_length = length / 2;
-
-//   std::string a = num1.substr(0, half_length);
-//   std::string b = num1.substr(half_length, length - half_length);
-
-//   std::string c = num2.substr(0, half_length);
-//   std::string d = num2.substr(half_length, length - half_length);
-
-//   std::string ac = karatsubaMultiplication(a, c, base);
-//   std::string bd = karatsubaMultiplication(b, d, base);
-
-//   std::string a_plus_b = schoolAddition(a, b, base);
-//   std::string c_plus_d = schoolAddition(c, d, base);
-
-//   std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base);
-
-//   std::string ad_bc = schoolSubtraction(ab_cd, schoolAddition(ac, bd, base),
-//   base);
-
-//   std::string result = schoolAddition(ac + std::string(2 * half_length, '0'),
-//   ad_bc + std::string(half_length, '0'), base);
-
-//   // for (int i = 0; i < 2*(length-half_length); i++)
-//   //   ac.append("0");
-
-//   // for (int i = 0; i < length-half_length; i++)
-//   //   ad_bc.append("0");
-
-//   // std::string result = schoolAddition(schoolAddition(ac,bd,base),
-//   ad_bc,base);
-
-//   // std::cout << result << std::endl;
-
-//   // return result.erase(0, std::min(result.find_first_not_of('0'),
-//   result.size()-1));
-
-//   // std::cout << result.size() << std::endl;
-
-//   int i = result.size();
-//   while (result.size() > length) {
-//     result.erase(length);
-//     i--;
-//   }
-
-//   // std::cout << result << std::endl;
-
-//   // if (result.empty()) {
-//   //   return "0";
-//   // }
-
-//   return result;
-// }
 
 std::string karatsubaMultiplication(std::string num1, std::string num2,int base) {
   int num1_length = num1.length();
@@ -223,18 +134,19 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
   }
 
   if (length % 2 != 0) {
-    num1 = "0" + num1;
-    num2 = "0" + num2;
     length++;
   }
+
+  num1 = num1.insert(0, length - num1_length, '0');
+  num2 = num2.insert(0, length - num2_length, '0');
 
   int half_length = length / 2;
 
   std::string a = num1.substr(0, half_length);
   std::string b = num1.substr(half_length);
-
   std::string c = num2.substr(0, half_length);
   std::string d = num2.substr(half_length);
+
 
   std::string ac = karatsubaMultiplication(a, c, base);
   std::string bd = karatsubaMultiplication(b, d, base);
@@ -242,31 +154,24 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
   std::string a_plus_b = schoolAddition(a, b, base);
   std::string c_plus_d = schoolAddition(c, d, base);
 
-  std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base);
-  std::string ad_bc =
-      schoolSubtraction(ab_cd, schoolAddition(ac, bd, base), base);
+  std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base); //ab + cd
 
-  std::string result =
-      schoolAddition(ac + std::string(2 * half_length, '0'),
-                     ad_bc + std::string(half_length, '0'), base);
-  result = schoolAddition(result, bd, base);
+  std::string ad_bc = schoolSubtraction(ab_cd,ac,base);
 
-  while (!result.empty() && result.front() == '0') {
-    result.erase(result.begin());
-  }
+  ad_bc = schoolAddition(ad_bc, bd, base); //(a+b)*(c+d) - ac - bd = ad + bc
 
-  int i = result.size();
-  while (result.size() > length) {
-    result.erase(length);
-    i--;
-  }
+  std::string r1 = ac + std::string(2*half_length, '0');
 
-  if (result.empty()) {
-    return "0";
-  }
+  std::string r2 = ad_bc + std::string(half_length,'0');
+  std::string r3 = bd;
 
-  return result;
+  std::string result = schoolAddition(r1, r2,base);
+  result = schoolAddition(result, r3,base);
+
+
+  return removeZeros(result);
 }
+
 
 int main() {
   std::string a;
