@@ -154,14 +154,11 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
   std::string a_plus_b = schoolAddition(a, b, base);
   std::string c_plus_d = schoolAddition(c, d, base);
 
-  std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base); //ab + cd
+  std::string ad_bc = schoolSubtraction(karatsubaMultiplication(a_plus_b, c_plus_d, base),ac,base); 
+  ad_bc = schoolSubtraction(ad_bc,bd,base); //(a+b)*(c+d) - ac - bd = ad + bc
 
-  std::string ad_bc = schoolSubtraction(ab_cd,ac,base);
-
-  ad_bc = schoolAddition(ad_bc, bd, base); //(a+b)*(c+d) - ac - bd = ad + bc
 
   std::string r1 = ac + std::string(2*half_length, '0');
-
   std::string r2 = ad_bc + std::string(half_length,'0');
   std::string r3 = bd;
 
