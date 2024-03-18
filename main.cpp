@@ -4,14 +4,47 @@
 #include <string>
 #include <vector>
 
+
+std::pair <std::string, std::string> makeEqualLength (std::string num1, std::string num2) {
+  int diff = abs(num1.length() - num2.length());
+
+  if (num1.length() < num2.length()) {
+    num1.insert(0, diff, '0');
+  } else {
+    num2.insert(0, diff, '0');
+  }
+
+  return std::make_pair(num1,num2);
+}
+
+
 std::string removeZeros (std::string num) {
-  num.erase(0, num.find_first_not_of('0'));
+  num.erase(0, std::min(num.find_first_not_of('0'), num.size() - 1));
 
   if (num.empty()) {
     return "0";
   }
 
   return num;
+}
+
+// return true if num1 is greater or equal to num2, else false
+bool compareLength (std::string num1, std::string num2) {
+  if (num1.length() > num2.length()) {
+    return true;
+  } else if (num1.length() < num2.length()) {
+    return false;
+  }
+
+  for (unsigned int i = 0; i < num1.length(); i++) {
+    if (num1[i] > num2[i]) {
+      return true;
+    } else if (num1[i] < num2[i]) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 std::string schoolAddition(std::string num1, std::string num2, int base) {
@@ -74,71 +107,65 @@ std::string schoolAddition(std::string num1, std::string num2, int base) {
 //   return false;
 // }
 
-std::string schoolSubtraction(std::string num1, std::string num2, int base) {
-  int num1_length = num1.length();
-  int num2_length = num2.length();
-  int length = std::max(num1_length, num2_length);
 
-  std::string zeros = "";
+std::string schoolSubtraction(std::string num1, std::string num2, int base) {
+
+  std::pair<std::string, std::string> equal_length = makeEqualLength(num1, num2);
+
+  num1 = equal_length.first;
+  num2 = equal_length.second;
+
   std::string result = "";
 
-  if (num1_length < num2_length) {
-    std::swap(num1, num2);
-    std::swap(num1_length, num2_length);
-  }
-
-  int diff = abs(num1_length - num2_length);
-
-  for (int i = 1; i <= diff; i++) {
-    zeros += "0";
-  }
-
-  if (num1_length > num2_length) {
-    num2 = zeros + num2;
-  }
-
   int borrow = 0;
+  int sub = 0;
 
-  for (int i = length - 1; i >= 0; i--) {
-    int digit1 = num1[i] - '0';
-    int digit2 = num2[i] - '0';
-
-    int sub = digit1 - digit2 - borrow;
+  for (int i = num1.length() - 1; i >= 0; i--) {
+    sub = ((int) num1[i] - '0') - ((int) num2[i] - '0') - borrow;
+    borrow = 0;
 
     if (sub < 0) {
-      sub += base;
       borrow = 1;
-    } else {
-      borrow = 0;
+      sub += base;
     }
 
-    result = (char)(sub + '0') + result;
+    result = (char)(sub % base + '0') + result;
   }
-
-
-  return removeZeros(result);
+  return result;
 }
 
-std::string karatsubaMultiplication(std::string num1, std::string num2,int base) {
-  int num1_length = num1.length();
-  int num2_length = num2.length();
-  int length = std::max(num1_length, num2_length);
-
-  if (num1_length == 0 || num2_length == 0) {
+std::string baseCase(int num, int base) {
+  if (num == 0) {
     return "0";
   }
 
-  if (num1_length == 1 && num2_length == 1) {
-    int result = (num1[0] - '0') * (num2[0] - '0');
-    return std::to_string(result);
+  std::string result = "";
+  while (num) {
+    result = char((num % base) + '0') + result;
+    num = num/base;
+  }
+  return result;
+}
+
+std::string karatsubaMultiplication(std::string num1, std::string num2,int base) {
+
+  std::pair<std::string, std::string> equal_length = makeEqualLength(num1, num2);
+
+  num1 = equal_length.first;
+  num2 = equal_length.second;
+
+  if (num1.length() == 0 || num2.length() == 0) {
+    return "0";
   }
 
-  if (length % 2 != 0) {
-    length++;
+  if (num1.length() == 1 && num2.length() == 1) {
+    std::string result = baseCase((num1[0] - '0') * (num2[0] - '0'),base);
+    return result;
   }
+  
+  int length = num1.length();
 
-  num1 = num1.insert(0, length - num1_length, '0');
-  num2 = num2.insert(0, length - num2_length, '0');
+  std::string result = "";
 
   int half_length = length / 2;
 
@@ -154,9 +181,11 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
   std::string a_plus_b = schoolAddition(a, b, base);
   std::string c_plus_d = schoolAddition(c, d, base);
 
-  std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base); 
+  std::string ab_mul_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base); 
 
-  std::string ad_bc = schoolSubtraction(ab_cd,schoolAddition(ac,bd,base),base); //(a+b)*(c+d) - ac - bd = ad + bc
+  std::string ac_plus_bd = schoolAddition(ac,bd,base);
+
+  std::string ad_bc = schoolSubtraction(ab_mul_cd,ac_plus_bd,base); //(a+b)*(c+d) - (ac + bd) = ad + bc
 
   for (int i = 0; i < 2*(length - half_length); i++) {
     ac.append("0");
@@ -166,9 +195,10 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
     ad_bc.append("0");
   }
 
-  std::string result = removeZeros(schoolAddition(schoolAddition(ac,bd,base), ad_bc, base));
+  std::string result1 = schoolAddition(ac,bd,base);
+  result = schoolAddition(result1, ad_bc,base);
 
-  return result;
+  return removeZeros(result);
 
 
 
@@ -176,7 +206,6 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
   //result = schoolAddition(result, r3,base);
 
 
-  return removeZeros(result);
 }
 
 
