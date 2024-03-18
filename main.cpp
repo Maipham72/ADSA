@@ -142,28 +142,38 @@ std::string karatsubaMultiplication(std::string num1, std::string num2,int base)
 
   int half_length = length / 2;
 
-  std::string a = num1.substr(0, half_length);
-  std::string b = num1.substr(half_length);
-  std::string c = num2.substr(0, half_length);
-  std::string d = num2.substr(half_length);
+  std::string a = num1.substr(0, half_length); //a0
+  std::string b = num1.substr(half_length, length - half_length); //a1 
+  std::string c = num2.substr(0, half_length); //b0
+  std::string d = num2.substr(half_length, length - half_length); //b1
 
 
-  std::string ac = karatsubaMultiplication(a, c, base);
-  std::string bd = karatsubaMultiplication(b, d, base);
+  std::string ac = karatsubaMultiplication(a, c, base); //p0
+  std::string bd = karatsubaMultiplication(b, d, base); //p2
 
   std::string a_plus_b = schoolAddition(a, b, base);
   std::string c_plus_d = schoolAddition(c, d, base);
 
-  std::string ad_bc = schoolSubtraction(karatsubaMultiplication(a_plus_b, c_plus_d, base),ac,base); 
-  ad_bc = schoolSubtraction(ad_bc,bd,base); //(a+b)*(c+d) - ac - bd = ad + bc
+  std::string ab_cd = karatsubaMultiplication(a_plus_b, c_plus_d, base); 
+
+  std::string ad_bc = schoolSubtraction(ab_cd,schoolAddition(ac,bd,base),base); //(a+b)*(c+d) - ac - bd = ad + bc
+
+  for (int i = 0; i < 2*(length - half_length); i++) {
+    ac.append("0");
+  }
+
+  for (int i = 0; i < length - half_length; i++) {
+    ad_bc.append("0");
+  }
+
+  std::string result = removeZeros(schoolAddition(schoolAddition(ac,bd,base), ad_bc, base));
+
+  return result;
 
 
-  std::string r1 = ac + std::string(2*half_length, '0');
-  std::string r2 = ad_bc + std::string(half_length,'0');
-  std::string r3 = bd;
 
-  std::string result = schoolAddition(r1, r2,base);
-  result = schoolAddition(result, r3,base);
+
+  //result = schoolAddition(result, r3,base);
 
 
   return removeZeros(result);
